@@ -33,6 +33,28 @@ app.get('/api/bahasa', (req, res) => {
     });
 });
 
+// api untuk registrasi pengguna baru
+app.post('/api/register', async (req, res) => {
+    try {
+        const { nama_pengguna, email, kata_sandi } = req.body;
+        // password hashing untuk keamanan
+        const salt = await bcrypt.genSalt(10);
+        const hashedPassword = await bcrypt.hash(kata_sandi, salt);
+
+        const query = "INSERT INTO pengguna (nama_pengguna, email, kata_sandi) VALUES (?, ?, ?)";
+        conn.query(query, [nama_pengguna, email, hashedPassword], (err, result) => {
+            if (err) {
+                // Error 1062 biasanya karena email sudah terdaftar
+                if(err.code === 'ER_DUP_ENTRY') return res.status(400).json({ error: "Email sudah digunakan!" });
+                return res.status(500).json({ error: err.message });
+            }
+            res.json({ pesan: "Yeay! Registrasi berhasil." });
+        });
+    } catch (error) {
+        res.status(500).json({ error: "Terjadi kesalahan pada server" });
+    }
+});
+
 // test endpoint untuk memastikan server berjalan
 // app.get('/', (req, res) => {
 //     res.json({ pesan: 'Server Backend SumutTalk berhasil berjalan dengan baik!' });
