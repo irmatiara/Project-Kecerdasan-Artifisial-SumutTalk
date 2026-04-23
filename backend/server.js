@@ -55,6 +55,36 @@ app.post('/api/register', async (req, res) => {
     }
 });
 
+// api untuk login pengguna
+app.post('/api/login', (req, res) => {
+    const { email, kata_sandi } = req.body;
+
+    const query = "SELECT * FROM pengguna WHERE email = ?";
+    conn.query(query, [email], async (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        // cek apakah email ditemukan di database
+        if (results.length === 0) {
+            return res.status(401).json({ error: "Email tidak ditemukan!" });
+        }
+        const user = results[0];
+        // cek password yang diinput dengan yang ada di database
+        const validPassword = await bcrypt.compare(kata_sandi, user.kata_sandi);
+        if (!validPassword) {
+            return res.status(401).json({ error: "Kata sandi salah!" });
+        }
+        // jika login berhasil, kirim data pengguna (tanpa kata sandi) ke frontend
+        res.json({ 
+            pesan: "Login berhasil!", 
+            user: { 
+                id: user.id, 
+                nama: user.nama_pengguna, 
+                email: user.email,
+                peran: user.peran
+            } 
+        });
+    });
+});
+
 // test endpoint untuk memastikan server berjalan
 // app.get('/', (req, res) => {
 //     res.json({ pesan: 'Server Backend SumutTalk berhasil berjalan dengan baik!' });
