@@ -85,6 +85,20 @@ app.post('/api/login', (req, res) => {
     });
 });
 
+// api untuk mendapatkan data profil pengguna berdasarkan ID
+app.get('/api/profil/:id', (req, res) => {
+    const userId = req.params.id;
+    // tidak mengirimkan kata_sandi ke frontend untuk keamanan
+    const query = "SELECT id, nama_pengguna, email, foto_profil, peran FROM pengguna WHERE id = ?";  
+    conn.query(query, [userId], (err, results) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (results.length === 0) {
+            return res.status(404).json({ error: "Pengguna tidak ditemukan!" });
+        }
+        res.json(results[0]);
+    });
+});
+
 // test endpoint untuk memastikan server berjalan
 // app.get('/', (req, res) => {
 //     res.json({ pesan: 'Server Backend SumutTalk berhasil berjalan dengan baik!' });
