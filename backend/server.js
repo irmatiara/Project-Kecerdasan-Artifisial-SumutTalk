@@ -99,6 +99,21 @@ app.get('/api/profil/:id', (req, res) => {
     });
 });
 
+// api untuk memperbarui data profil pengguna
+app.put('/api/profil/:id', (req, res) => {
+    const userId = req.params.id;
+    const { nama_pengguna, email } = req.body;
+
+    const query = "UPDATE pengguna SET nama_pengguna = ?, email = ? WHERE id = ?";
+    conn.query(query, [nama_pengguna, email, userId], (err, result) => {
+        if (err) {
+            if(err.code === 'ER_DUP_ENTRY') return res.status(400).json({ error: "Email sudah dipakai orang lain!" });
+            return res.status(500).json({ error: err.message });
+        }
+        res.json({ pesan: "Profil berhasil diperbarui!" });
+    });
+});
+
 // test endpoint untuk memastikan server berjalan
 // app.get('/', (req, res) => {
 //     res.json({ pesan: 'Server Backend SumutTalk berhasil berjalan dengan baik!' });
